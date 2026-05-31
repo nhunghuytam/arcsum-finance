@@ -5,19 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArcSum Finance - DEX on Arc</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
   <script>
-    // Khởi tạo Tailwind
-    tailwind.config = {
-      content: [],
-      theme: {
-        extend: {}
-      }
-    }
+    tailwind.config = { content: [] };
   </script>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
@@ -30,11 +23,11 @@
       </div>
       <div class="flex items-center gap-4">
         <button onclick="addArcNetwork()" 
-                class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm transition">
+                class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm transition-colors">
           Add Arc Network
         </button>
         <button onclick="connectWallet()" id="connectBtn" 
-                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold transition">
+                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold transition-colors">
           Connect Wallet
         </button>
       </div>
@@ -48,13 +41,25 @@
 
   <div class="max-w-md mx-auto bg-zinc-900 rounded-3xl p-8 mt-10">
     <button onclick="connectWallet()" 
-            class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 rounded-2xl text-lg transition">
+            class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 rounded-2xl text-lg transition-colors">
       Connect Wallet
     </button>
   </div>
 
 <script>
-// === SCRIPT PHẦN KẾT NỐI VÍ ===
+// Chờ ethers load xong
+async function waitForEthers() {
+  if (typeof ethers !== "undefined") return true;
+  return new Promise(resolve => {
+    const check = setInterval(() => {
+      if (typeof ethers !== "undefined") {
+        clearInterval(check);
+        resolve(true);
+      }
+    }, 100);
+  });
+}
+
 let provider, signer, userAddress;
 const ARC_CHAIN_ID = '0x4CEF52';
 
@@ -62,7 +67,7 @@ async function switchToArcNetwork() {
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: ARC_CHAIN_ID }],
+      params: [{ chainId: ARC_CHAIN_ID }]
     });
     return true;
   } catch (error) {
@@ -70,6 +75,7 @@ async function switchToArcNetwork() {
       return await addArcNetwork();
     }
     console.error(error);
+    alert("Không thể chuyển sang mạng Arc. Vui lòng thử lại.");
     return false;
   }
 }
@@ -81,42 +87,4 @@ async function addArcNetwork() {
       params: [{
         chainId: ARC_CHAIN_ID,
         chainName: 'Arc Testnet',
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-        rpcUrls: ['https://rpc.testnet.arc.network'],
-        blockExplorerUrls: ['https://testnet.arcscan.app']
-      }]
-    });
-    alert("✅ Đã thêm mạng Arc Testnet!");
-    return true;
-  } catch (e) {
-    alert("Không thể thêm mạng. Bạn có thể thêm thủ công trong MetaMask.");
-    return false;
-  }
-}
-
-async function connectWallet() {
-  if (typeof window.ethereum === "undefined") {
-    return alert("Vui lòng cài MetaMask!");
-  }
-
-  try {
-    const switched = await switchToArcNetwork();
-    if (!switched) return;
-
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    document.getElementById("connectBtn").innerHTML = 
-      `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-
-    alert(`✅ Kết nối thành công!\n${userAddress}`);
-  } catch (error) {
-    console.error(error);
-    alert("Kết nối thất bại: " + error.message);
-  }
-}
-</script>
-</body>
-</html>
+        nativeCurrency: { name: 'USDC', symbol:
