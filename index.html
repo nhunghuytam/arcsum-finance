@@ -1,44 +1,95 @@
-<script>
-let provider, signer, userAddress;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcSum Finance - DEX on Arc</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-const ARC_CHAIN_ID = '0x4CEF52'; // 5042002
+  <script>
+    // Khởi tạo Tailwind
+    tailwind.config = {
+      content: [],
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen">
+
+  <nav class="fixed top-0 w-full bg-zinc-900/95 backdrop-blur-md border-b border-zinc-700 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">ArcSum</h1>
+        <span class="text-xs px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">.finance</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="addArcNetwork()" 
+                class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm transition">
+          Add Arc Network
+        </button>
+        <button onclick="connectWallet()" id="connectBtn" 
+                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold transition">
+          Connect Wallet
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 pt-28 pb-20 text-center">
+    <h2 class="text-5xl font-bold mb-4">ArcSum Finance</h2>
+    <p class="text-xl text-zinc-400">Liquidity Hub trên Arc L1</p>
+  </div>
+
+  <div class="max-w-md mx-auto bg-zinc-900 rounded-3xl p-8 mt-10">
+    <button onclick="connectWallet()" 
+            class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 rounded-2xl text-lg transition">
+      Connect Wallet
+    </button>
+  </div>
+
+<script>
+// === SCRIPT PHẦN KẾT NỐI VÍ ===
+let provider, signer, userAddress;
+const ARC_CHAIN_ID = '0x4CEF52';
 
 async function switchToArcNetwork() {
-  if (typeof window.ethereum === "undefined") return false;
-
   try {
-    // Thử switch trước
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: ARC_CHAIN_ID }],
     });
     return true;
-  } catch (switchError) {
-    // Nếu chưa có mạng → thêm mạng
-    if (switchError.code === 4902) {
-      try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: ARC_CHAIN_ID,
-            chainName: 'Arc Testnet',
-            nativeCurrency: { 
-              name: 'USDC', 
-              symbol: 'USDC', 
-              decimals: 18 
-            },
-            rpcUrls: ['https://rpc.testnet.arc.network'],
-            blockExplorerUrls: ['https://testnet.arcscan.app']
-          }]
-        });
-        return true;
-      } catch (addError) {
-        console.error(addError);
-        alert("Không thể thêm mạng Arc. Vui lòng thử thủ công.");
-        return false;
-      }
+  } catch (error) {
+    if (error.code === 4902) {
+      return await addArcNetwork();
     }
-    console.error(switchError);
+    console.error(error);
+    return false;
+  }
+}
+
+async function addArcNetwork() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: ARC_CHAIN_ID,
+        chainName: 'Arc Testnet',
+        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+        rpcUrls: ['https://rpc.testnet.arc.network'],
+        blockExplorerUrls: ['https://testnet.arcscan.app']
+      }]
+    });
+    alert("✅ Đã thêm mạng Arc Testnet!");
+    return true;
+  } catch (e) {
+    alert("Không thể thêm mạng. Bạn có thể thêm thủ công trong MetaMask.");
     return false;
   }
 }
@@ -49,35 +100,23 @@ async function connectWallet() {
   }
 
   try {
-    // Bước 1: Switch sang Arc Testnet
     const switched = await switchToArcNetwork();
-    if (!switched) {
-      return alert("Vui lòng switch sang Arc Testnet thủ công.");
-    }
+    if (!switched) return;
 
-    // Bước 2: Kết nối ví
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     signer = await provider.getSigner();
     userAddress = await signer.getAddress();
 
-    // Cập nhật nút
-    const btn = document.getElementById("connectBtn");
-    if (btn) {
-      btn.innerHTML = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-      btn.onclick = null; // disable click sau khi connect
-    }
+    document.getElementById("connectBtn").innerHTML = 
+      `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
 
-    alert(`✅ Kết nối thành công!\nĐịa chỉ: ${userAddress}\nMạng: Arc Testnet`);
-    
+    alert(`✅ Kết nối thành công!\n${userAddress}`);
   } catch (error) {
     console.error(error);
-    alert("Kết nối thất bại: " + (error.message || error));
+    alert("Kết nối thất bại: " + error.message);
   }
 }
-
-// Giữ hàm addArcNetwork cũ để người dùng bấm thủ công nếu cần
-async function addArcNetwork() {
-  await switchToArcNetwork();
-}
 </script>
+</body>
+</html>
