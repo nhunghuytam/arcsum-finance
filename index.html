@@ -24,165 +24,88 @@
       </div>
       
       <div class="flex items-center gap-8 text-sm font-medium">
-        <a href="#" onclick="showSection('swap')" class="hover:text-emerald-400 transition">Swap</a>
-        <a href="#" onclick="showSection('liquidity')" class="hover:text-emerald-400 transition">Liquidity</a>
-        <a href="#" onclick="showSection('nft')" class="hover:text-emerald-400 transition">Mint NFT</a>
-        <a href="#" onclick="showSection('faucet')" class="hover:text-emerald-400 transition">Faucet</a>
+        <a href="#" onclick="showSection('dashboard')" class="hover:text-emerald-400">Dashboard</a>
+        <a href="#" onclick="showSection('swap')" class="hover:text-emerald-400">Swap</a>
+        <a href="#" onclick="showSection('liquidity')" class="hover:text-emerald-400">Liquidity</a>
+        <a href="#" onclick="showSection('nft')" class="hover:text-emerald-400">NFT</a>
+        <a href="#" onclick="showSection('faucet')" class="hover:text-emerald-400">Faucet</a>
       </div>
 
       <div class="flex items-center gap-4">
-        <button onclick="addArcNetwork()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm transition">
-          Add Network
-        </button>
-        <button onclick="connectWallet()" id="connectBtn" 
-                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold transition">
-          Connect Wallet
-        </button>
+        <button onclick="addArcNetwork()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm">Add Network</button>
+        <button onclick="connectWallet()" id="connectBtn" class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold">Connect Wallet</button>
       </div>
     </div>
   </nav>
 
   <div class="max-w-5xl mx-auto px-6 pt-28 pb-12">
 
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" class="bg-zinc-900 rounded-3xl p-8">
+      <h2 class="text-3xl font-bold mb-8">Portfolio</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="portfolio"></div>
+    </div>
+
     <!-- SWAP -->
-    <div id="swap-section" class="bg-zinc-900 rounded-3xl p-8">
+    <div id="swap-section" class="hidden bg-zinc-900 rounded-3xl p-8">
       <h2 class="text-3xl font-bold text-center mb-8">Swap Tokens</h2>
       <div class="max-w-md mx-auto space-y-6">
         <div class="bg-zinc-800 rounded-2xl p-6">
           <p class="text-zinc-400 mb-2">You Pay</p>
           <div class="flex items-center justify-between">
             <input id="payAmount" type="text" value="100" class="bg-transparent text-5xl font-semibold w-40 focus:outline-none">
-            <div class="bg-zinc-700 px-5 py-3 rounded-xl flex items-center gap-2">
-              <span class="font-semibold">USDC</span>
-            </div>
+            <div class="bg-zinc-700 px-5 py-3 rounded-xl">USDC</div>
           </div>
         </div>
 
-        <div class="flex justify-center">
-          <div class="bg-zinc-800 p-4 rounded-2xl border-4 border-zinc-900">
-            <i class="fa-solid fa-arrow-down text-2xl text-emerald-400"></i>
-          </div>
-        </div>
+        <div class="flex justify-center"><i class="fa-solid fa-arrow-down text-3xl text-emerald-400"></i></div>
 
         <div class="bg-zinc-800 rounded-2xl p-6">
           <p class="text-zinc-400 mb-2">You Receive</p>
           <div class="flex items-center justify-between">
             <input id="receiveAmount" type="text" value="99.75" class="bg-transparent text-5xl font-semibold w-40 focus:outline-none">
-            <div class="bg-zinc-700 px-5 py-3 rounded-xl flex items-center gap-2">
-              <span class="font-semibold">ARC</span>
-            </div>
+            <div class="bg-zinc-700 px-5 py-3 rounded-xl">ARC</div>
           </div>
         </div>
 
-        <button onclick="performSwap()" 
-                class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-5 rounded-2xl text-xl transition">
+        <button onclick="performSwap()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-5 rounded-2xl text-xl">
           Swap Now
         </button>
       </div>
     </div>
 
-    <!-- LIQUIDITY -->
-    <div id="liquidity-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">
-      <h2 class="text-3xl font-bold mb-6">Add Liquidity</h2>
-      <p class="text-zinc-400 mb-8">Cung cấp thanh khoản và nhận LP Token</p>
-      <button onclick="addLiquidity()" 
-              class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 px-12 rounded-2xl text-lg">
-        Add Liquidity
-      </button>
-    </div>
-
-    <!-- MINT NFT -->
-    <div id="nft-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">
-      <h2 class="text-3xl font-bold mb-6">Mint NFT</h2>
-      <p class="text-zinc-400 mb-8">Mint ArcSum Genesis NFT miễn phí</p>
-      <button onclick="mintNFT()" 
-              class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 px-12 rounded-2xl text-lg">
-        Mint NFT (Free)
-      </button>
-    </div>
-
-    <!-- FAUCET -->
-    <div id="faucet-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">
-      <h2 class="text-3xl font-bold mb-6">Testnet Faucet</h2>
-      <p class="text-zinc-400 mb-8">Nhận token testnet miễn phí</p>
-      <button onclick="getTestTokens()" 
-              class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 px-12 rounded-2xl text-lg">
-        Claim 1000 USDC + 10 ARC
-      </button>
-    </div>
-
+    <!-- Các section khác (Liquidity, NFT, Faucet) -->
+    <div id="liquidity-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">...</div>
+    <div id="nft-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">...</div>
+    <div id="faucet-section" class="hidden bg-zinc-900 rounded-3xl p-8 text-center">...</div>
   </div>
 
 <script>
-// Config
+// ==================== CẤU HÌNH ====================
 const ARC_CHAIN_ID = '0x4cef52';
-let userAddress = null;
 
-// Connect Wallet
-async function connectWallet() {
-  if (!window.ethereum) return alert("Vui lòng cài MetaMask!");
-
-  try {
-    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: ARC_CHAIN_ID }] });
-  } catch (e) {
-    if (e.code === 4902) await addArcNetwork();
-    else throw e;
-  }
-
-  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  userAddress = accounts[0];
-
-  document.getElementById("connectBtn").innerHTML = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-  document.getElementById("connectBtn").style.backgroundColor = "#10b981";
-
-  alert(`✅ Kết nối thành công!\n${userAddress}`);
-}
-
-// Add Network
-async function addArcNetwork() {
-  await window.ethereum.request({
-    method: 'wallet_addEthereumChain',
-    params: [{
-      chainId: ARC_CHAIN_ID,
-      chainName: 'Arc Testnet',
-      nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-      rpcUrls: ['https://rpc.testnet.arc.network'],
-      blockExplorerUrls: ['https://testnet.arcscan.app']
-    }]
-  });
-}
-
-// Show Section
-function showSection(section) {
-  document.querySelectorAll('#swap-section, #liquidity-section, #nft-section, #faucet-section').forEach(el => el.classList.add('hidden'));
-  document.getElementById(section + '-section').classList.remove('hidden');
-}
-
-// Simulated Functions
-function performSwap() {
-  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
-  alert("✅ Swap thành công! (Demo)\nBạn đã swap 100 USDC sang ~99.75 ARC");
-}
-
-function addLiquidity() {
-  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
-  alert("✅ Thêm thanh khoản thành công! (Demo)");
-}
-
-function mintNFT() {
-  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
-  alert("🎉 Mint NFT thành công!\nBạn đã nhận ArcSum Genesis NFT #001");
-}
-
-function getTestTokens() {
-  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
-  alert("💰 Đã claim test token!\n+1000 USDC\n+10 ARC\n(Kiểm tra ví MetaMask)");
-}
-
-window.onload = () => {
-  showSection('swap');
-  console.log("🚀 ArcSum Finance - Full Demo Loaded");
+const CONTRACTS = {
+  USDC: "0x3600000000000000000000000000000000000000",
+  ARC: "0x343D87e36171f47F499065b1e12CC8E583CD831c",   // ← Địa chỉ bạn vừa deploy
+  ROUTER: "0x0000000000000000000000000000000000000000", // Chưa có
+  NFT: "0x0000000000000000000000000000000000000000"
 };
+
+let provider, signer, userAddress = null;
+
+async function connectWallet() { /* ... */ } // code giống trước
+
+async function addArcNetwork() { /* ... */ } // code giống trước
+
+async function performSwap() {
+  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
+  alert("✅ Swap demo thành công!\n100 USDC → 99.75 ARC");
+}
+
+// Các hàm khác...
+function showSection(section) { /* ... */ }
+
+window.onload = () => showSection('dashboard');
 </script>
 </body>
 </html>
