@@ -5,11 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArcSum Finance - DEX on Arc</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
-  <!-- Ethers.js - Đặt ở HEAD để load sớm -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
 
   <script>
@@ -44,7 +41,7 @@
     <p class="text-xl text-zinc-400">Liquidity Hub trên Arc L1</p>
   </div>
 
-  <!-- Connect Button -->
+  <!-- Main Connect Button -->
   <div class="max-w-md mx-auto bg-zinc-900 rounded-3xl p-8 mt-10">
     <button onclick="connectWallet()" 
             class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-4 rounded-2xl text-lg transition">
@@ -53,78 +50,103 @@
   </div>
 
 <script>
-// === CẤU HÌNH ARC TESTNET ===
+// === DEBUG & CONFIG ===
 const ARC_CHAIN_ID = '0x4cef52';
-
 let provider, signer, userAddress;
 
-// Đợi ethers load (an toàn tuyệt đối)
+console.log("🚀 Script loaded successfully!");
+
 async function ensureEthersLoaded() {
-  if (typeof ethers !== "undefined") return true;
-
-  return new Promise((resolve) => {
-    let attempts = 0;
-    const maxAttempts = 60; // ~6 giây
-
-    const check = setInterval(() => {
-      attempts++;
-      if (typeof ethers !== "undefined") {
-        clearInterval(check);
-        resolve(true);
-      }
-      if (attempts >= maxAttempts) {
-        clearInterval(check);
-        resolve(false);
-      }
-    }, 100);
-  });
+  console.log("🔄 Checking ethers...");
+  if (typeof ethers !== "undefined") {
+    console.log("✅ Ethers loaded");
+    return true;
+  }
+  console.log("❌ Ethers not found");
+  return false;
 }
 
-// Thêm mạng Arc Testnet
 async function addArcNetwork() {
-  if (!window.ethereum) return alert("Vui lòng cài MetaMask!");
-
+  console.log("➕ Adding Arc Network...");
+  if (!window.ethereum) {
+    alert("MetaMask not found!");
+    return false;
+  }
   try {
     await window.ethereum.request({
       method: 'wallet_addEthereumChain',
       params: [{
         chainId: ARC_CHAIN_ID,
         chainName: 'Arc Testnet',
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+        nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
         rpcUrls: ['https://rpc.testnet.arc.network'],
         blockExplorerUrls: ['https://testnet.arcscan.app']
       }]
     });
-    alert("✅ Đã thêm mạng Arc Testnet thành công!");
+    alert("✅ Đã thêm mạng Arc Testnet!");
     return true;
   } catch (e) {
     console.error(e);
-    alert("Không thể thêm mạng tự động.\nHãy thêm thủ công trong MetaMask.");
+    alert("Không thể thêm mạng tự động.");
     return false;
   }
 }
 
-// Kết nối ví
 async function connectWallet() {
+  console.log("🔘 Connect Wallet button clicked!");
+
   if (!window.ethereum) {
-    return alert("Vui lòng cài MetaMask hoặc ví Web3!");
+    console.error("❌ No ethereum provider");
+    return alert("Vui lòng cài MetaMask!");
   }
 
   try {
     const ethersReady = await ensureEthersLoaded();
     if (!ethersReady) {
-      return alert("ethers.js chưa tải xong. Vui lòng reload trang (Ctrl + Shift + R)");
+      return alert("ethers.js chưa load. Reload trang Ctrl+Shift+R");
     }
 
-    // Chuyển sang mạng Arc
+    console.log("🔄 Switching to Arc network...");
     try {
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: ARC_CHAIN_ID }],
+        params: [{ chainId: ARC_CHAIN_ID }]
       });
+      console.log("✅ Switched network");
     } catch (switchError) {
+      console.log("⚠️ Switch error:", switchError.code);
       if (switchError.code === 4902) {
-        const added = await addArcNetwork();
-        if (!added) return;
+        await addArcNetwork();
       } else {
         throw switchError;
+      }
+    }
+
+    console.log("🔗 Requesting accounts...");
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    
+    signer = await provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    console.log("✅ Connected:", userAddress);
+
+    // Update button
+    const btn = document.getElementById("connectBtn");
+    btn.innerHTML = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+    btn.style.backgroundColor = "#10b981";
+
+    alert(`✅ Kết nối thành công!\n\n${userAddress}`);
+
+  } catch (error) {
+    console.error("❌ Connect error:", error);
+    alert("Lỗi kết nối: " + (error.message || error));
+  }
+}
+
+window.onload = () => {
+  console.log("📄 Page fully loaded - Ready to connect");
+};
+</script>
+</body>
+</html>
