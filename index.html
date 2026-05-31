@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArcSum Finance - DEX on Arc</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 w-full bg-zinc-900/95 backdrop-blur-md border-b border-zinc-700 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+          ArcSum
+        </h1>
+        <span class="text-xs px-2 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">.finance</span>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <button onclick="addArcNetwork()" 
+                class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm font-medium">
+          Add Arc Network
+        </button>
+        <button onclick="connectWallet()" id="connectBtn"
+                class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold">
+          Connect Wallet
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 pt-28 pb-20">
+    <div class="text-center mb-12">
+      <h2 class="text-5xl md:text-6xl font-bold mb-4">ArcSum Finance</h2>
+      <p class="text-xl text-zinc-400">Liquidity Hub • Swap • Liquidity • NFT trên Arc L1</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-2 mb-10 border-b border-zinc-700 pb-1">
+      <button onclick="switchTab(0)" class="tab-btn active px-8 py-3" id="tab0">Swap</button>
+      <button onclick="switchTab(1)" class="tab-btn px-8 py-3" id="tab1">Add Liquidity</button>
+      <button onclick="switchTab(2)" class="tab-btn px-8 py-3" id="tab2">Mint NFT</button>
+      <button onclick="window.open('https://faucet.circle.com/','_blank')" 
+              class="tab-btn px-8 py-3 text-emerald-400 font-medium">Get Test USDC</button>
+    </div>
+
+    <!-- Swap -->
+    <div id="content0" class="tab-content">
+      <div class="max-w-lg mx-auto bg-zinc-900 rounded-3xl p-8 shadow-2xl">
+        <h3 class="text-2xl font-semibold mb-6 text-center">Swap Tokens</h3>
+        <div class="space-y-6">
+          <div class="bg-zinc-800 rounded-2xl p-5">
+            <p class="text-sm text-zinc-400 mb-2">You Pay</p>
+            <input id="fromAmount" type="number" value="100" class="w-full bg-transparent text-3xl outline-none">
+            <p class="text-emerald-400">USDC</p>
+          </div>
+
+          <div class="text-center text-2xl">↓</div>
+
+          <div class="bg-zinc-800 rounded-2xl p-5">
+            <p class="text-sm text-zinc-400 mb-2">You Receive</p>
+            <input id="toAmount" type="number" value="99.85" class="w-full bg-transparent text-3xl outline-none">
+            <p class="text-emerald-400">ARC Token</p>
+          </div>
+
+          <button onclick="performSwap()" 
+                  class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-5 rounded-2xl text-lg transition">
+            Swap Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Liquidity -->
+    <div id="content1" class="tab-content hidden">
+      <div class="max-w-lg mx-auto bg-zinc-900 rounded-3xl p-8 text-center">
+        <h3 class="text-2xl font-semibold mb-6">Add Liquidity</h3>
+        <p class="text-zinc-400 mb-8">Cung cấp thanh khoản và nhận LP Token</p>
+        <button onclick="addLiquidity()" 
+                class="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold py-5 rounded-2xl">
+          Add Liquidity Pair
+        </button>
+      </div>
+    </div>
+
+    <!-- Mint NFT -->
+    <div id="content2" class="tab-content hidden">
+      <div class="max-w-lg mx-auto bg-zinc-900 rounded-3xl p-8 text-center">
+        <h3 class="text-2xl font-semibold mb-6">Mint Genesis NFT</h3>
+        <p class="text-zinc-400 mb-8">Nhận Genesis Pass NFT trên Arc Testnet</p>
+        <button onclick="mintNFT()" 
+                class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 font-bold py-5 rounded-2xl text-lg">
+          Mint NFT Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// Kết nối ví
+let provider, signer, userAddress;
+
+async function connectWallet() {
+  if (!window.ethereum) return alert("Vui lòng cài MetaMask hoặc ví hỗ trợ Arc!");
+
+  provider = new ethers.BrowserProvider(window.ethereum);
+  signer = await provider.getSigner();
+  userAddress = await signer.getAddress();
+
+  document.getElementById("connectBtn").innerHTML = 
+    `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+}
+
+async function addArcNetwork() {
+  try {
+    await window.ethereum.request({
+      method: 'wallet_addEthereumChain',
+      params: [{
+        chainId: '0x4CEF52',
+        chainName: 'Arc Testnet',
+        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+        rpcUrls: ['https://rpc.testnet.arc.network'],
+        blockExplorerUrls: ['https://testnet.arcscan.app']
+      }]
+    });
+    alert("✅ Đã thêm Arc Testnet thành công!");
+  } catch (error) {
+    alert("Đã thêm hoặc có lỗi xảy ra.");
+  }
+}
+
+function switchTab(n) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('content' + n).classList.remove('hidden');
+
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'border-b-2', 'border-emerald-400'));
+  document.getElementById('tab' + n).classList.add('active', 'border-b-2', 'border-emerald-400');
+}
+
+// Demo functions
+async function performSwap() {
+  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
+  alert("🔄 Đang thực hiện Swap trên Arc Testnet...\n\n(Phiên bản demo)");
+}
+
+async function addLiquidity() {
+  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
+  alert("💧 Đang thêm thanh khoản...\n(Phiên bản demo)");
+}
+
+async function mintNFT() {
+  if (!userAddress) return alert("Vui lòng kết nối ví trước!");
+  alert("🎟️ Đang mint NFT trên Arc Testnet...\n(Phiên bản demo - cần contract thật)");
+}
+</script>
+
+</body>
+</html>
