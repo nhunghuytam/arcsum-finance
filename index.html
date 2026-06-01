@@ -6,64 +6,69 @@
   <title>ArcSum Finance - DEX on Arc</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js" defer></script>
+  <style>
+    body { font-family: system-ui, sans-serif; }
+  </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
 
-<nav class="fixed top-0 w-full bg-zinc-900/95 backdrop-blur-md border-b border-zinc-700 z-50">
-  <div class="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
-    <div class="flex items-center gap-3">
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">ArcSum</h1>
-      <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">.finance</span>
+  <nav class="fixed top-0 w-full bg-black/90 backdrop-blur-md border-b border-zinc-800 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">ArcSum</h1>
+        <span class="text-xs px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full">.finance</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="addArcNetwork()" 
+                class="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-2xl text-sm transition">
+          Add Arc Network
+        </button>
+        <button onclick="connectWallet()" id="connectBtn"
+                class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-semibold transition">
+          Connect Wallet
+        </button>
+      </div>
     </div>
-    <div class="flex items-center gap-4">
-      <button onclick="addArcNetwork()" class="bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-2xl text-sm">Add Arc Network</button>
-      <button onclick="connectWallet()" id="connectBtn" class="bg-emerald-500 hover:bg-emerald-600 px-6 py-2.5 rounded-2xl font-semibold">Connect Wallet</button>
-    </div>
-  </div>
-</nav>
+  </nav>
 
-<div class="max-w-lg mx-auto pt-32 px-4">
-  <div class="bg-zinc-900 rounded-3xl p-6 shadow-xl">
-    <h2 class="text-3xl font-bold text-center mb-8">Swap Tokens</h2>
-    
-    <div class="space-y-6">
-      <!-- Token From -->
-      <div class="bg-zinc-800 rounded-2xl p-5">
-        <div class="flex justify-between mb-3">
-          <span class="text-zinc-400 text-sm">Bạn trả</span>
-          <span id="fromBalance" class="text-emerald-400">0.00</span>
+  <div class="max-w-lg mx-auto pt-28 px-4">
+    <div class="bg-zinc-900 rounded-3xl p-8 shadow-2xl">
+      <h2 class="text-3xl font-bold text-center mb-8">Swap Tokens</h2>
+      
+      <!-- From -->
+      <div class="bg-zinc-800 rounded-2xl p-5 mb-3">
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-zinc-400">Bạn trả</span>
+          <span class="text-emerald-400">0.00</span>
         </div>
-        <div class="flex gap-4 items-center">
-          <input id="fromAmount" type="text" value="1" class="bg-transparent text-4xl flex-1 outline-none">
-          <select id="fromToken" class="bg-zinc-700 rounded-2xl px-5 py-3">
-            <option value="0x3600000000000000000000000000000000000000">USDC</option>
-          </select>
+        <div class="flex gap-3">
+          <input id="fromAmount" type="text" value="1" 
+                 class="bg-transparent text-4xl outline-none flex-1">
+          <div class="bg-zinc-700 px-5 py-3 rounded-2xl">USDC</div>
         </div>
       </div>
 
-      <div class="text-center text-4xl text-zinc-600">↓</div>
+      <div class="flex justify-center my-2 text-3xl text-zinc-500">↓</div>
 
-      <!-- Token To -->
+      <!-- To -->
       <div class="bg-zinc-800 rounded-2xl p-5">
-        <div class="flex justify-between mb-3">
-          <span class="text-zinc-400 text-sm">Bạn nhận</span>
-          <span id="toBalance" class="text-emerald-400">0.00</span>
+        <div class="flex justify-between text-sm mb-2">
+          <span class="text-zinc-400">Bạn nhận</span>
+          <span class="text-emerald-400">0.00</span>
         </div>
-        <div class="flex gap-4 items-center">
-          <input id="toAmount" type="text" class="bg-transparent text-4xl flex-1 outline-none" placeholder="0.0" readonly>
-          <select id="toToken" class="bg-zinc-700 rounded-2xl px-5 py-3">
-            <option value="">Chọn token</option>
-          </select>
+        <div class="flex gap-3">
+          <input id="toAmount" type="text" value="0.0" readonly
+                 class="bg-transparent text-4xl outline-none flex-1">
+          <div class="bg-zinc-700 px-5 py-3 rounded-2xl">Chọn token</div>
         </div>
       </div>
-    </div>
 
-    <button onclick="executeSwap()" 
-            class="w-full mt-10 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-black font-bold py-5 rounded-2xl text-xl transition-all">
-      Swap Now
-    </button>
+      <button onclick="executeSwap()" 
+              class="w-full mt-8 bg-gradient-to-r from-cyan-400 to-emerald-500 hover:brightness-110 text-black font-bold py-5 rounded-2xl text-xl transition">
+        Swap Now
+      </button>
+    </div>
   </div>
-</div>
 
 <script>
 let provider, signer, userAddress;
@@ -81,38 +86,52 @@ async function addArcNetwork() {
         rpcUrls: ['https://rpc.testnet.arc.network']
       }]
     });
-  } catch (e) {}
+    alert("✅ Đã thêm Arc Testnet!");
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function connectWallet() {
-  if (!window.ethereum) return alert("Vui lòng cài MetaMask!");
+  console.log("Connect button clicked!"); // Debug
 
-  try {
-    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: CHAIN_ID }] });
-  } catch (e) {
-    if (e.code === 4902) await addArcNetwork();
+  if (typeof window.ethereum === "undefined") {
+    return alert("Vui lòng cài MetaMask!");
   }
 
-  provider = new ethers.BrowserProvider(window.ethereum);
-  await provider.send("eth_requestAccounts", []);
-  signer = await provider.getSigner();
-  userAddress = await signer.getAddress();
+  try {
+    // Switch network
+    try {
+      await window.ethereum.request({ 
+        method: 'wallet_switchEthereumChain', 
+        params: [{ chainId: CHAIN_ID }] 
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) await addArcNetwork();
+    }
 
-  document.getElementById("connectBtn").innerHTML = `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-  alert("✅ Kết nối ví thành công!");
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    userAddress = await signer.getAddress();
+
+    document.getElementById("connectBtn").innerHTML = 
+      `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+
+    alert("✅ Kết nối ví thành công!");
+  } catch (error) {
+    console.error(error);
+    alert("Kết nối thất bại: " + error.message);
+  }
 }
 
 async function executeSwap() {
   if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
-
-  const amountIn = document.getElementById("fromAmount").value;
-  if (!amountIn || parseFloat(amountIn) <= 0) return alert("Nhập số lượng swap!");
-
-  alert(`🔄 Đang thực hiện Swap ${amountIn} USDC...\n\nRouter: ${ROUTER_ADDRESS}\n\n(Hiện tại chỉ demo - mình sẽ update hàm swap thật khi có ABI đầy đủ)`);
+  alert("🔄 Chức năng Swap đang được hoàn thiện...");
 }
 
-// Khởi tạo
-window.onload = () => console.log("ArcSum DEX Ready - Router:", ROUTER_ADDRESS);
+// Debug khi trang load
+console.log("✅ ArcSum DEX loaded successfully");
 </script>
 </body>
 </html>
