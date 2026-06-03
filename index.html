@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ArcSum Finance - DEX on Arc</title>
+  <title>ArcSum Finance - DEX on Arc Testnet</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
   <style>
-    body { font-family: system-ui, sans-serif; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .tab-active { border-bottom: 3px solid rgb(16 185 129); color: white; font-weight: 600; }
   </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen">
@@ -31,50 +32,102 @@
     </div>
   </nav>
 
-  <div class="max-w-lg mx-auto pt-28 px-4">
-    <div class="bg-zinc-900 rounded-3xl p-8 shadow-2xl">
-      <h2 class="text-3xl font-bold text-center mb-8">Swap Tokens</h2>
-      
-      <!-- From -->
-      <div class="bg-zinc-800 rounded-2xl p-5 mb-3">
-        <div class="flex justify-between text-sm mb-2">
-          <span class="text-zinc-400">Bạn trả</span>
-          <span class="text-emerald-400">0.00</span>
-        </div>
-        <div class="flex gap-3">
-          <input id="fromAmount" type="text" value="1" 
-                 class="bg-transparent text-4xl outline-none flex-1">
-          <div class="bg-zinc-700 px-5 py-3 rounded-2xl">USDC</div>
-        </div>
+  <div class="max-w-4xl mx-auto pt-28 px-4 pb-12">
+    <!-- Tabs -->
+    <div class="flex border-b border-zinc-800 mb-8 overflow-x-auto">
+      <button onclick="switchTab(0)" class="tab px-8 py-4 tab-active" id="tab0">Faucet + Streak</button>
+      <button onclick="switchTab(1)" class="tab px-8 py-4 text-zinc-400 hover:text-white" id="tab1">Swap</button>
+      <button onclick="switchTab(2)" class="tab px-8 py-4 text-zinc-400 hover:text-white" id="tab2">Add Liquidity</button>
+      <button onclick="switchTab(3)" class="tab px-8 py-4 text-zinc-400 hover:text-white" id="tab3">Mint NFT</button>
+    </div>
+
+    <!-- Faucet Tab -->
+    <div id="content0" class="tab-content">
+      <div class="bg-zinc-900 rounded-3xl p-10 text-center">
+        <h2 class="text-4xl font-bold mb-4">Arc Testnet Faucet</h2>
+        <p class="text-zinc-400 mb-8">Nhận USDC testnet miễn phí từ Circle</p>
+        <button onclick="claimFaucet()" 
+                class="px-12 py-5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold rounded-3xl text-2xl hover:scale-105 transition">
+          Claim 10 USDC
+        </button>
+        <p class="text-xs text-zinc-500 mt-6">Giới hạn: 1 lần / 2 giờ • Dùng Circle Faucet</p>
       </div>
+    </div>
 
-      <div class="flex justify-center my-2 text-3xl text-zinc-500">↓</div>
+    <!-- Swap Tab -->
+    <div id="content1" class="tab-content hidden">
+      <div class="bg-zinc-900 rounded-3xl p-8">
+        <h2 class="text-3xl font-bold text-center mb-8">Swap Tokens</h2>
+        
+        <!-- From -->
+        <div class="bg-zinc-800 rounded-2xl p-5 mb-3">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-zinc-400">Bạn trả</span>
+          </div>
+          <div class="flex gap-3">
+            <input id="fromAmount" type="text" value="10" 
+                   class="bg-transparent text-4xl outline-none flex-1 font-medium">
+            <div class="bg-zinc-700 px-6 py-3 rounded-2xl">USDC</div>
+          </div>
+        </div>
 
-      <!-- To -->
-      <div class="bg-zinc-800 rounded-2xl p-5">
-        <div class="flex justify-between text-sm mb-2">
-          <span class="text-zinc-400">Bạn nhận</span>
-          <span class="text-emerald-400">0.00</span>
+        <div class="flex justify-center my-4 text-4xl text-zinc-500">↓</div>
+
+        <!-- To -->
+        <div class="bg-zinc-800 rounded-2xl p-5">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-zinc-400">Bạn nhận</span>
+          </div>
+          <div class="flex gap-3">
+            <input id="toAmount" type="text" value="9.95" readonly 
+                   class="bg-transparent text-4xl outline-none flex-1 font-medium">
+            <select id="toToken" class="bg-zinc-700 px-6 py-3 rounded-2xl outline-none">
+              <option value="EURC">EURC</option>
+              <option value="USYC">USYC</option>
+            </select>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <input id="toAmount" type="text" value="0.0" readonly
-                 class="bg-transparent text-4xl outline-none flex-1">
-          <div class="bg-zinc-700 px-5 py-3 rounded-2xl">Chọn token</div>
-        </div>
+
+        <button onclick="executeSwap()" 
+                class="w-full mt-8 bg-gradient-to-r from-cyan-400 to-emerald-500 hover:brightness-110 text-black font-bold py-6 rounded-3xl text-xl transition">
+          Swap Now
+        </button>
       </div>
+    </div>
 
-      <button onclick="executeSwap()" 
-              class="w-full mt-8 bg-gradient-to-r from-cyan-400 to-emerald-500 hover:brightness-110 text-black font-bold py-5 rounded-2xl text-xl transition">
-        Swap Now
-      </button>
+    <!-- Add Liquidity Tab -->
+    <div id="content2" class="tab-content hidden">
+      <div class="bg-zinc-900 rounded-3xl p-10 text-center">
+        <h2 class="text-3xl font-bold mb-6">Add Liquidity</h2>
+        <p class="text-zinc-400 mb-8">Chức năng này sẽ được cập nhật khi có Router DEX chính thức.</p>
+        <div class="text-6xl mb-4">🏗️</div>
+        <p class="text-emerald-400">Coming Soon</p>
+      </div>
+    </div>
+
+    <!-- Mint NFT Tab -->
+    <div id="content3" class="tab-content hidden">
+      <div class="bg-zinc-900 rounded-3xl p-10 text-center">
+        <h2 class="text-3xl font-bold mb-8">Mint ArcSum NFT</h2>
+        <button onclick="mintNFT()" 
+                class="px-16 py-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-3xl text-2xl hover:scale-105 transition">
+          Mint Genesis NFT (Free)
+        </button>
+        <p class="text-xs text-zinc-500 mt-8">Mint miễn phí trên Arc Testnet</p>
+      </div>
     </div>
   </div>
 
 <script>
 let provider, signer, userAddress;
-const ROUTER_ADDRESS = "0xADDE8a35A94ea4fC588FCaa34CD802f3afa6DA66";
-const CHAIN_ID = "0x4CEF52";
 
+// ================== ARC TESTNET CONFIG ==================
+const CHAIN_ID = "0x4cef52";
+const RPC_URL = "https://rpc.testnet.arc.network";
+const EXPLORER_URL = "https://testnet.arcscan.app";
+const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+
+// ================== ADD NETWORK ==================
 async function addArcNetwork() {
   try {
     await window.ethereum.request({
@@ -83,55 +136,81 @@ async function addArcNetwork() {
         chainId: CHAIN_ID,
         chainName: 'Arc Testnet',
         nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-        rpcUrls: ['https://rpc.testnet.arc.network']
+        rpcUrls: [RPC_URL],
+        blockExplorerUrls: [EXPLORER_URL]
       }]
     });
-    alert("✅ Đã thêm Arc Testnet!");
+    alert("✅ Đã thêm Arc Testnet thành công!");
   } catch (e) {
     console.error(e);
+    alert("Lỗi khi thêm network: " + (e.message || e));
   }
 }
 
+// ================== CONNECT WALLET ==================
 async function connectWallet() {
-  console.log("Connect button clicked!"); // Debug
-
-  if (typeof window.ethereum === "undefined") {
-    return alert("Vui lòng cài MetaMask!");
-  }
+  if (!window.ethereum) return alert("Vui lòng cài MetaMask hoặc Rabby Wallet!");
 
   try {
-    // Switch network
-    try {
-      await window.ethereum.request({ 
-        method: 'wallet_switchEthereumChain', 
-        params: [{ chainId: CHAIN_ID }] 
-      });
-    } catch (switchError) {
-      if (switchError.code === 4902) await addArcNetwork();
+    await window.ethereum.request({ 
+      method: 'wallet_switchEthereumChain', 
+      params: [{ chainId: CHAIN_ID }] 
+    });
+  } catch (switchError) {
+    if (switchError.code === 4902) {
+      await addArcNetwork();
+    } else {
+      return alert("Không thể chuyển network. Vui lòng thử lại.");
     }
-
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    document.getElementById("connectBtn").innerHTML = 
-      `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-
-    alert("✅ Kết nối ví thành công!");
-  } catch (error) {
-    console.error(error);
-    alert("Kết nối thất bại: " + error.message);
   }
+
+  provider = new ethers.BrowserProvider(window.ethereum);
+  await provider.send("eth_requestAccounts", []);
+  signer = await provider.getSigner();
+  userAddress = await signer.getAddress();
+
+  document.getElementById("connectBtn").innerHTML = 
+    `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
+
+  alert("✅ Kết nối Arc Testnet thành công!");
 }
 
+// ================== FAUCET ==================
+async function claimFaucet() {
+  if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
+  window.open("https://faucet.circle.com/", "_blank");
+}
+
+// ================== SWAP ==================
 async function executeSwap() {
   if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
-  alert("🔄 Chức năng Swap đang được hoàn thiện...");
+  
+  const amount = document.getElementById("fromAmount").value;
+  const toToken = document.getElementById("toToken").value;
+  
+  alert(`🔄 Swap ${amount} USDC → ${toToken}\n\nĐang simulate trên Arc Testnet...\n\n(Chức năng đầy đủ sẽ được thêm sau khi deploy Router)`);
 }
 
-// Debug khi trang load
-console.log("✅ ArcSum DEX loaded successfully");
+// ================== MINT NFT ==================
+async function mintNFT() {
+  if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
+  alert("🎟️ Đang mint ArcSum Genesis NFT...\n\nTransaction sẽ được simulate (chức năng đầy đủ sau khi deploy NFT contract).");
+}
+
+// ================== TAB SWITCH ==================
+function switchTab(n) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('tab-active', i === n);
+  });
+  document.querySelectorAll('.tab-content').forEach((c, i) => {
+    c.classList.toggle('hidden', i !== n);
+  });
+}
+
+// Khởi tạo tab đầu tiên
+switchTab(0);
+
+console.log("✅ ArcSum Finance loaded successfully on Arc Testnet");
 </script>
 </body>
 </html>
