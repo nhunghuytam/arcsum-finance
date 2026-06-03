@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ArcSum Finance - DEX on Arc Testnet</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Đặt ethers script ở đây và KHÔNG defer -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.min.js"></script>
   <style>
     body { font-family: system-ui, -apple-system, sans-serif; }
@@ -39,103 +40,9 @@
       <button onclick="switchTab(3)" class="tab px-8 py-4 text-zinc-400 hover:text-white" id="tab3">Mint NFT</button>
     </div>
 
-    <!-- Các tab giữ nguyên như cũ -->
-    <div id="content0" class="tab-content"> ... (giữ nguyên như bản trước) </div>
-    <div id="content1" class="tab-content hidden"> ... </div>
-    <!-- Các tab khác tương tự -->
-  </div>
-
-<script>
-let provider, signer, userAddress;
-
-// ================== CONFIG ==================
-const CHAIN_ID = "0x4cef52";        // 5042002
-const RPC_URL = "https://rpc.testnet.arc.network";
-const EXPLORER_URL = "https://testnet.arcscan.app";
-
-// ================== ADD NETWORK ==================
-async function addArcNetwork() {
-  try {
-    await window.ethereum.request({
-      method: 'wallet_addEthereumChain',
-      params: [{
-        chainId: CHAIN_ID,
-        chainName: 'Arc Testnet',
-        nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-        rpcUrls: [RPC_URL],
-        blockExplorerUrls: [EXPLORER_URL]
-      }]
-    });
-    alert("✅ Đã thêm Arc Testnet thành công!\nHãy nhấn Connect Wallet lần nữa.");
-  } catch (e) {
-    alert("Lỗi thêm network: " + (e.message || e));
-  }
-}
-
-// ================== CONNECT WALLET (ĐÃ SỬA) ==================
-async function connectWallet() {
-  if (!window.ethereum) {
-    return alert("❌ Vui lòng cài MetaMask hoặc Rabby Wallet!");
-  }
-
-  try {
-    // Thử switch network
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: CHAIN_ID }]
-    });
-
-    provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    userAddress = await signer.getAddress();
-
-    document.getElementById("connectBtn").innerHTML = 
-      `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`;
-    
-    alert("✅ Kết nối ví Arc Testnet thành công!");
-    
-  } catch (error) {
-    console.error(error);
-    
-    if (error.code === 4902) {
-      alert("⚠️ Chưa có mạng Arc Testnet. Đang thêm tự động...");
-      await addArcNetwork();
-    } 
-    else if (error.code === 4001) {
-      alert("Bạn đã từ chối kết nối ví.");
-    }
-    else {
-      alert("Lỗi kết nối: " + (error.message || error));
-    }
-  }
-}
-
-// ================== Các hàm khác (Faucet, Swap, Mint) ==================
-async function claimFaucet() {
-  if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
-  window.open("https://faucet.circle.com/", "_blank");
-}
-
-async function executeSwap() {
-  if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
-  const amount = document.getElementById("fromAmount").value || 10;
-  alert(`🔄 Đang thực hiện swap ${amount} USDC...\n\n(Đang simulate - chức năng đầy đủ sau)`);
-}
-
-async function mintNFT() {
-  if (!userAddress) return alert("Vui lòng Connect Wallet trước!");
-  alert("🎟️ Đang mint NFT...\n\n(Đang simulate)");
-}
-
-function switchTab(n) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('tab-active', i===n));
-  document.querySelectorAll('.tab-content').forEach((c,i) => c.classList.toggle('hidden', i!==n));
-}
-
-// Khởi tạo
-switchTab(0);
-console.log("✅ ArcSum Finance v2 loaded");
-</script>
-</body>
-</html>
+    <!-- Faucet -->
+    <div id="content0" class="tab-content">
+      <div class="bg-zinc-900 rounded-3xl p-10 text-center">
+        <h2 class="text-4xl font-bold mb-4">Arc Testnet Faucet</h2>
+        <p class="text-zinc-400 mb-8">Nhận USDC testnet miễn phí</p>
+        <button onclick="claimFaucet()" class="px-12 py-5 bg-gradient-to-r from-emerald-500 to-cyan-500
