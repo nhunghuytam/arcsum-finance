@@ -157,6 +157,36 @@
     .token-select:hover { border-color: var(--emerald); background-color: #313136; }
     .token-select option { background: #18181b; color: var(--text); }
 
+    /* Custom token picker — prevents MetaMask injecting ETH icons */
+    .token-picker {
+      position: relative; display: inline-block;
+    }
+    .token-picker-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: #27272a; border: 1px solid var(--border);
+      border-radius: 10px; padding: 7px 12px;
+      cursor: pointer; color: var(--text);
+      font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+      margin-right: 10px; transition: border-color .2s, background .2s;
+      white-space: nowrap; user-select: none;
+    }
+    .token-picker-btn:hover { border-color: var(--emerald); background: #313136; }
+    .token-picker-btn::after { content: ' ▾'; font-size: 0.7rem; color: var(--muted); }
+    .token-picker-dropdown {
+      position: absolute; right: 10px; top: calc(100% + 4px);
+      background: #1c1c1f; border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; z-index: 100;
+      min-width: 110px; display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .token-picker-dropdown.open { display: block; }
+    .token-picker-option {
+      padding: 10px 16px; cursor: pointer;
+      font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+      color: var(--text); transition: background .15s;
+    }
+    .token-picker-option:hover { background: #27272a; color: var(--emerald); }
+
     /* SWAP ARROW */
     .swap-arrow-btn {
       display: flex; align-items: center; justify-content: center;
@@ -327,11 +357,15 @@
         <label class="input-label">FROM</label>
         <div class="input-wrap">
           <input type="number" id="swapFromAmt" placeholder="0.00" min="0" oninput="calcSwapOut()" />
-          <select id="swapFromToken" class="token-select" onchange="calcSwapOut()">
-            <option value="USDC">USDC</option>
-            <option value="WETH">WETH</option>
-            <option value="ARC">ARC</option>
-          </select>
+          <div class="token-picker" id="picker-swapFrom">
+            <div class="token-picker-btn" onclick="togglePicker('swapFrom')" id="label-swapFrom">USDC</div>
+            <div class="token-picker-dropdown" id="drop-swapFrom">
+              <div class="token-picker-option" onclick="pickToken('swapFrom','USDC')">USDC</div>
+              <div class="token-picker-option" onclick="pickToken('swapFrom','WETH')">WETH</div>
+              <div class="token-picker-option" onclick="pickToken('swapFrom','ARC')">ARC</div>
+            </div>
+          </div>
+          <input type="hidden" id="swapFromToken" value="USDC" />
         </div>
       </div>
 
@@ -343,11 +377,15 @@
         <label class="input-label">TO (ESTIMATED)</label>
         <div class="input-wrap">
           <input type="number" id="swapToAmt" placeholder="0.00" readonly style="cursor:default" />
-          <select id="swapToToken" class="token-select" onchange="calcSwapOut()">
-            <option value="WETH">WETH</option>
-            <option value="USDC">USDC</option>
-            <option value="ARC">ARC</option>
-          </select>
+          <div class="token-picker" id="picker-swapTo">
+            <div class="token-picker-btn" onclick="togglePicker('swapTo')" id="label-swapTo">WETH</div>
+            <div class="token-picker-dropdown" id="drop-swapTo">
+              <div class="token-picker-option" onclick="pickToken('swapTo','WETH')">WETH</div>
+              <div class="token-picker-option" onclick="pickToken('swapTo','USDC')">USDC</div>
+              <div class="token-picker-option" onclick="pickToken('swapTo','ARC')">ARC</div>
+            </div>
+          </div>
+          <input type="hidden" id="swapToToken" value="WETH" />
         </div>
       </div>
 
@@ -356,6 +394,7 @@
         <div class="info-row"><span class="info-key">Price Impact</span><span class="info-val" id="priceImpact">—</span></div>
         <div class="info-row"><span class="info-key">Slippage Tolerance</span><span class="info-val">0.5%</span></div>
         <div class="info-row"><span class="info-key">Network Fee</span><span class="info-val">~0.001 USDC</span></div>
+        <!-- network fee is gas cost, always positive -->
       </div>
 
       <button class="action-btn" id="swapBtn" onclick="doSwap()">Swap</button>
@@ -372,11 +411,15 @@
         <label class="input-label">TOKEN A AMOUNT</label>
         <div class="input-wrap">
           <input type="number" id="liqAmtA" placeholder="0.00" min="0" oninput="calcLiqB()" />
-          <select id="liqTokenA" class="token-select" onchange="calcLiqB()">
-            <option value="USDC">USDC</option>
-            <option value="WETH">WETH</option>
-            <option value="ARC">ARC</option>
-          </select>
+          <div class="token-picker" id="picker-liqA">
+            <div class="token-picker-btn" onclick="togglePicker('liqA')" id="label-liqA">USDC</div>
+            <div class="token-picker-dropdown" id="drop-liqA">
+              <div class="token-picker-option" onclick="pickToken('liqA','USDC')">USDC</div>
+              <div class="token-picker-option" onclick="pickToken('liqA','WETH')">WETH</div>
+              <div class="token-picker-option" onclick="pickToken('liqA','ARC')">ARC</div>
+            </div>
+          </div>
+          <input type="hidden" id="liqTokenA" value="USDC" />
         </div>
       </div>
 
@@ -386,11 +429,15 @@
         <label class="input-label">TOKEN B AMOUNT (AUTO)</label>
         <div class="input-wrap">
           <input type="number" id="liqAmtB" placeholder="0.00" readonly style="cursor:default" />
-          <select id="liqTokenB" class="token-select" onchange="calcLiqB()">
-            <option value="WETH">WETH</option>
-            <option value="USDC">USDC</option>
-            <option value="ARC">ARC</option>
-          </select>
+          <div class="token-picker" id="picker-liqB">
+            <div class="token-picker-btn" onclick="togglePicker('liqB')" id="label-liqB">WETH</div>
+            <div class="token-picker-dropdown" id="drop-liqB">
+              <div class="token-picker-option" onclick="pickToken('liqB','WETH')">WETH</div>
+              <div class="token-picker-option" onclick="pickToken('liqB','USDC')">USDC</div>
+              <div class="token-picker-option" onclick="pickToken('liqB','ARC')">ARC</div>
+            </div>
+          </div>
+          <input type="hidden" id="liqTokenB" value="WETH" />
         </div>
       </div>
 
@@ -454,10 +501,10 @@ const ARC_NETWORK_PARAMS = {
 // ── TODO: replace with your deployed contract addresses ──
 const CONTRACTS = {
   FAUCET:    '0x0000000000000000000000000000000000000000',
-  SWAP:      '0xADDE8a35A94ea4fC588FCaa34CD802f3afa6DA66',
+  SWAP:      '0x0000000000000000000000000000000000000000',
   LIQUIDITY: '0x0000000000000000000000000000000000000000',
-  NFT:       '0x0cc749782335cb88b18e9dc2364a7783198d510',
-  USDC:      '0x3600000000000000000000000000000000000000',
+  NFT:       '0x0000000000000000000000000000000000000000',
+  USDC:      '0x0000000000000000000000000000000000000000',
 };
 
 // Minimal ABIs
@@ -682,7 +729,37 @@ function updateNextClaim() {
 }
 
 // ─────────────────────────────────────────
-// SWAP
+// CUSTOM TOKEN PICKERS
+// ─────────────────────────────────────────
+function togglePicker(id) {
+  const drop = document.getElementById('drop-' + id);
+  const isOpen = drop.classList.contains('open');
+  // Close all dropdowns first
+  document.querySelectorAll('.token-picker-dropdown').forEach(d => d.classList.remove('open'));
+  if (!isOpen) drop.classList.add('open');
+}
+
+function pickToken(pickerId, token) {
+  document.getElementById('drop-' + pickerId).classList.remove('open');
+  document.getElementById('label-' + pickerId).textContent = token;
+
+  // Map picker IDs to hidden input IDs
+  const inputMap = { swapFrom: 'swapFromToken', swapTo: 'swapToToken', liqA: 'liqTokenA', liqB: 'liqTokenB' };
+  document.getElementById(inputMap[pickerId]).value = token;
+
+  // Trigger recalc
+  if (pickerId.startsWith('swap')) calcSwapOut();
+  if (pickerId.startsWith('liq'))  calcLiqB();
+}
+
+// Close pickers when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('.token-picker')) {
+    document.querySelectorAll('.token-picker-dropdown').forEach(d => d.classList.remove('open'));
+  }
+});
+
+// ─────────────────────────────────────────
 // ─────────────────────────────────────────
 function calcSwapOut() {
   const from = document.getElementById('swapFromToken').value;
@@ -706,11 +783,20 @@ function calcSwapOut() {
 }
 
 function flipSwap() {
-  const fromSel = document.getElementById('swapFromToken');
-  const toSel   = document.getElementById('swapToToken');
-  const fromAmt = document.getElementById('swapFromAmt');
-  const toAmt   = document.getElementById('swapToAmt');
-  [fromSel.value, toSel.value] = [toSel.value, fromSel.value];
+  const fromInput = document.getElementById('swapFromToken');
+  const toInput   = document.getElementById('swapToToken');
+  const fromAmt   = document.getElementById('swapFromAmt');
+  const toAmt     = document.getElementById('swapToAmt');
+
+  // Swap values
+  const tmp = fromInput.value;
+  fromInput.value = toInput.value;
+  toInput.value   = tmp;
+
+  // Update picker labels
+  document.getElementById('label-swapFrom').textContent = fromInput.value;
+  document.getElementById('label-swapTo').textContent   = toInput.value;
+
   fromAmt.value = toAmt.value;
   calcSwapOut();
 }
@@ -719,28 +805,30 @@ async function doSwap() {
   if (!signer) { toast('Connect your wallet first.', 'error'); return; }
   const amt = parseFloat(document.getElementById('swapFromAmt').value);
   if (!amt || amt <= 0) { toast('Enter a valid amount.', 'error'); return; }
+  const from = document.getElementById('swapFromToken').value;
+  const to   = document.getElementById('swapToToken').value;
+  if (from === to) { toast('Select two different tokens.', 'error'); return; }
 
   const btn = document.getElementById('swapBtn');
   setLoading(btn, 'Swapping…');
 
+  const isDemo = CONTRACTS.SWAP === '0x0000000000000000000000000000000000000000';
+
   try {
-    if (CONTRACTS.SWAP === '0x0000000000000000000000000000000000000000') {
+    if (isDemo) {
       await sleep(1800);
-      toast('Demo swap executed! (deploy swap contract to go live)', 'success');
+      const out = document.getElementById('swapToAmt').value;
+      toast(`Demo: Swapped ${amt} ${from} → ${out} ${to} ✓`, 'success');
     } else {
-      // Real swap via router
       const router   = new ethers.Contract(CONTRACTS.SWAP, SWAP_ABI, signer);
-      const tokenIn  = CONTRACTS[document.getElementById('swapFromToken').value];
-      const tokenOut = CONTRACTS[document.getElementById('swapToToken').value];
-      const amtIn    = ethers.utils.parseUnits(amt.toString(), 18);
-      const amtOut   = await router.getAmountsOut(amtIn, [tokenIn, tokenOut]);
-      const minOut   = amtOut[1].mul(995).div(1000); // 0.5% slippage
-
-      // Approve first
-      const token = new ethers.Contract(tokenIn, ERC20_ABI, signer);
-      const approveTx = await token.approve(CONTRACTS.SWAP, amtIn);
-      await approveTx.wait();
-
+      const tokenIn  = CONTRACTS[from];
+      const tokenOut = CONTRACTS[to];
+      if (!tokenIn || !tokenOut) { toast('Token contract address not set.', 'error'); return; }
+      const amtIn  = ethers.utils.parseUnits(amt.toString(), 18);
+      const amtOut = await router.getAmountsOut(amtIn, [tokenIn, tokenOut]);
+      const minOut = amtOut[1].mul(995).div(1000);
+      const token  = new ethers.Contract(tokenIn, ERC20_ABI, signer);
+      await (await token.approve(CONTRACTS.SWAP, amtIn)).wait();
       const deadline = Math.floor(Date.now() / 1000) + 300;
       const tx = await router.swapExactTokensForTokens(amtIn, minOut, [tokenIn, tokenOut], address, deadline);
       toast('Transaction sent…', 'info');
@@ -772,7 +860,8 @@ function calcLiqB() {
   const rate = RATES[tokA + '-' + tokB] || (1 / (RATES[tokB + '-' + tokA] || 1));
   const b    = (a * rate).toFixed(6);
   document.getElementById('liqAmtB').value  = b;
-  document.getElementById('poolShare').textContent = '~' + (a / 10000 * 100).toFixed(4) + '%';
+  const share = Math.abs(a / 10000 * 100);
+  document.getElementById('poolShare').textContent = '~' + share.toFixed(4) + '%';
   document.getElementById('lpTokens').textContent  = (Math.sqrt(a * parseFloat(b))).toFixed(4) + ' LP';
 }
 
