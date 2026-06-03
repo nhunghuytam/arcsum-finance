@@ -37,6 +37,16 @@
     </div>
 
     <div id="streakGrid" class="flex gap-2 mb-4"></div>
+<div class="mt-4 mb-4">
+  <div>
+    Total GM:
+    <span id="gmCount" class="font-bold text-yellow-400">0</span>
+  </div>
+</div>
+
+<button onclick="sayGM()" class="bg-yellow-500 text-black px-4 py-2 rounded mb-4">
+  Say GM ☀️
+</button>
 
     <button onclick="claimFaucet()" class="bg-cyan-600 px-4 py-2 rounded">
       Open Arc Faucet
@@ -188,8 +198,57 @@ function claimFaucet(){
   "_blank"
  );
 }
+function loadGM(){
+ const count =
+   localStorage.getItem("arc_gm_count") || 0;
 
+ document.getElementById("gmCount").innerText =
+   count;
+}
+
+function sayGM(){
+
+ if(!address){
+   alert("Connect wallet first");
+   return;
+ }
+
+ const today =
+   new Date().toDateString();
+
+ const lastGM =
+   localStorage.getItem("arc_last_gm");
+
+ if(lastGM === today){
+   alert("You already said GM today ☀️");
+   return;
+ }
+
+ let count = parseInt(
+   localStorage.getItem("arc_gm_count") || "0"
+ );
+
+ count++;
+
+ localStorage.setItem(
+   "arc_gm_count",
+   count
+ );
+
+ localStorage.setItem(
+   "arc_last_gm",
+   today
+ );
+
+ document.getElementById("gmCount").innerText =
+   count;
+
+ bumpStreak();
+
+ alert("GM sent ☀️");
+}
 renderStreak();
+loadGM();
 </script>
 </body>
 </html>
