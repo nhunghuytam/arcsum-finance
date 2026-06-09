@@ -40,13 +40,39 @@
 <div class="mt-4 mb-4">
   <div>
     Total GM:
-    <span id="gmCount" class="font-bold text-green-400">0</span>
+    <span id="gmCount" class="font-bold text-emerald-400">0</span>
+  </div>
+
+  <div id="lastSignature"
+       class="text-xs text-emerald-400 break-all mt-2">
   </div>
 </div>
 
-<button onclick="sayGM()" class="bg-green-500 text-black px-4 py-2 rounded mb-4">
-  Say GM ☀️
+<button onclick="sayGM()"
+class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded mb-4">
+  GM ☀️
 </button>
+
+<div class="bg-zinc-800 p-4 rounded-xl mt-4">
+  <h3 class="text-emerald-400 font-bold mb-2">
+    Arc Dashboard
+  </h3>
+
+  <div>
+    Wallet:
+    <span id="walletDisplay">Not Connected</span>
+  </div>
+
+  <div>
+    GM Count:
+    <span id="gmDashboard">0</span>
+  </div>
+
+  <div>
+    Streak:
+    <span id="streakDashboard">0</span>
+  </div>
+</div>
 
     <button onclick="claimFaucet()" class="bg-cyan-600 px-4 py-2 rounded">
       Open Arc Faucet
@@ -106,6 +132,8 @@ async function connectWallet(){
    provider = new ethers.providers.Web3Provider(window.ethereum);
    signer = provider.getSigner();
    address = await signer.getAddress();
+document.getElementById("walletDisplay").innerText =
+  shortAddr(address);
 
    document.getElementById("walletAddr").innerText = shortAddr(address);
    document.getElementById("connectBtn").innerText = "Connected";
@@ -159,7 +187,8 @@ function renderStreak(){
 
  document.getElementById("streakCount").innerText =
    s.days;
-
+document.getElementById("streakDashboard").innerText =
+   s.days;
  grid.innerHTML = "";
 
  for(let i=0;i<7;i++){
