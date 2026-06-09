@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ArcSum Lite</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ArcSum Lite</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
 <body class="bg-black text-white min-h-screen">
 
@@ -16,7 +16,6 @@
     <button onclick="addArcNetwork()" class="bg-slate-700 px-4 py-2 rounded">
       Add Arc Network
     </button>
-
     <button id="connectBtn" onclick="connectWallet()" class="bg-emerald-600 px-4 py-2 rounded">
       Connect Wallet
     </button>
@@ -31,269 +30,188 @@
     <h2 class="text-2xl font-bold mb-3">Faucet + Daily Streak</h2>
 
     <div class="mb-3">
-      Current Streak:
-      <span id="streakCount" class="font-bold text-emerald-400">0</span>
-      day(s)
+      Current Streak: 
+      <span id="streakCount" class="font-bold text-emerald-400">0</span> day(s)
     </div>
 
     <div id="streakGrid" class="flex gap-2 mb-4"></div>
-<div class="mt-4 mb-4">
-  <div>
-    Total GM:
-    <span id="gmCount" class="font-bold text-emerald-400">0</span>
-  </div>
 
-  <div id="lastSignature"
-       class="text-xs text-emerald-400 break-all mt-2">
-  </div>
-</div>
+    <div class="mt-4 mb-4">
+      <div>Total GM: <span id="gmCount" class="font-bold text-emerald-400">0</span></div>
+      <div id="lastTx" class="text-xs text-emerald-400 break-all mt-2"></div>
+    </div>
 
-<button onclick="sayGM()"
-class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded mb-4">
-  GM ☀️
-</button>
+    <button onclick="sayGM()" 
+      class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl text-lg font-medium mb-4">
+      GM ☀️
+    </button>
 
-<div class="bg-zinc-800 p-4 rounded-xl mt-4">
-  <h3 class="text-emerald-400 font-bold mb-2">
-    Arc Dashboard
-  </h3>
-
-  <div>
-    Wallet:
-    <span id="walletDisplay">Not Connected</span>
-  </div>
-
-  <div>
-    GM Count:
-    <span id="gmDashboard">0</span>
-  </div>
-
-  <div>
-    Streak:
-    <span id="streakDashboard">0</span>
-  </div>
-</div>
-
-    <button onclick="claimFaucet()" class="bg-cyan-600 px-4 py-2 rounded">
+    <button onclick="claimFaucet()" 
+      class="bg-cyan-600 px-4 py-2 rounded">
       Open Arc Faucet
     </button>
+
+    <div class="bg-zinc-800 p-4 rounded-xl mt-6">
+      <h3 class="text-emerald-400 font-bold mb-2">Arc Dashboard</h3>
+      <div>Wallet: <span id="walletDisplay">Not Connected</span></div>
+      <div>GM Count: <span id="gmDashboard">0</span></div>
+      <div>Streak: <span id="streakDashboard">0</span></div>
+    </div>
   </div>
 </div>
 
 <script>
 const ARC_CHAIN_ID = 5042002;
-const ARC_CHAIN_HEX = "0x" + ARC_CHAIN_ID.toString(16);
+const GM_CONTRACT_ADDRESS = "0x____________________________"; // ←←← DÁN CONTRACT ADDRESS VÀO ĐÂY
 
-const ARC_NETWORK_PARAMS = {
-  chainId: ARC_CHAIN_HEX,
-  chainName: "Arc Testnet",
-  nativeCurrency: {
-    name: "USDC",
-    symbol: "USDC",
-    decimals: 18
-  },
-  rpcUrls: ["https://rpc.testnet.arc.network"],
-  blockExplorerUrls: ["https://testnet.arcscan.app"]
-};
-
-const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
-
-const ERC20_ABI = [
- "function balanceOf(address) view returns (uint256)",
- "function decimals() view returns (uint8)"
+const GM_ABI = [
+  "function sayGM()",
+  "function getUserStats(address) view returns (uint256 totalGM, uint256 streak, uint256 lastDay)"
 ];
 
-let provider;
-let signer;
-let address;
+let provider, signer, address, gmContract;
 
-function shortAddr(a){
- return a.slice(0,6)+"..."+a.slice(-4);
+function shortAddr(a) {
+  return a ? a.slice(0,6) + "..." + a.slice(-4) : "Not Connected";
 }
 
+// ================== ADD NETWORK ==================
 async function addArcNetwork(){
- try{
-   await window.ethereum.request({
-     method:"wallet_addEthereumChain",
-     params:[ARC_NETWORK_PARAMS]
-   });
-   alert("Arc Testnet added");
- }catch(e){
-   alert(e.message);
- }
+  try {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [{
+        chainId: "0x" + ARC_CHAIN_ID.toString(16),
+        chainName: "Arc Testnet",
+        nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
+        rpcUrls: ["https://rpc.testnet.arc.network"],
+        blockExplorerUrls: ["https://testnet.arcscan.app"]
+      }]
+    });
+    alert("Arc Testnet added!");
+  } catch(e) {
+    alert(e.message);
+  }
 }
 
+// ================== CONNECT WALLET ==================
 async function connectWallet(){
- try{
-   await window.ethereum.request({
-     method:"eth_requestAccounts"
-   });
+  try {
+    await window.ethereum.request({ method: "eth_requestAccounts" });
 
-   provider = new ethers.providers.Web3Provider(window.ethereum);
-   signer = provider.getSigner();
-   address = await signer.getAddress();
-document.getElementById("walletDisplay").innerText =
-  shortAddr(address);
+    provider = new ethers.providers.Web3Provider(window.ethereum);
+    signer = provider.getSigner();
+    address = await signer.getAddress();
 
-   document.getElementById("walletAddr").innerText = shortAddr(address);
-   document.getElementById("connectBtn").innerText = "Connected";
+    gmContract = new ethers.Contract(GM_CONTRACT_ADDRESS, GM_ABI, signer);
 
-   loadBalance();
+    document.getElementById("walletAddr").innerText = shortAddr(address);
+    document.getElementById("walletDisplay").innerText = shortAddr(address);
+    document.getElementById("connectBtn").innerText = "Connected";
 
- }catch(e){
-   alert(e.message);
- }
+    loadBalance();
+    await loadUserGMData();
+  } catch(e) {
+    alert(e.message);
+  }
 }
 
+// ================== LOAD BALANCE ==================
 async function loadBalance(){
- try{
-   const usdc = new ethers.Contract(
-     USDC_ADDRESS,
-     ERC20_ABI,
-     provider
-   );
+  try {
+    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+    const ERC20_ABI = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
+    
+    const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, provider);
+    const bal = await usdc.balanceOf(address);
+    const dec = await usdc.decimals();
 
-   const bal = await usdc.balanceOf(address);
-   const dec = await usdc.decimals();
-
-   document.getElementById("balance").innerText =
-      Number(
-        ethers.utils.formatUnits(bal,dec)
-      ).toFixed(2) + " USDC";
-
- }catch(e){
-   document.getElementById("balance").innerText =
-      "Unable to load";
- }
+    document.getElementById("balance").innerText = 
+      Number(ethers.utils.formatUnits(bal, dec)).toFixed(2) + " USDC";
+  } catch(e) {
+    document.getElementById("balance").innerText = "Unable to load";
+  }
 }
 
+// ================== STREAK FUNCTIONS (giữ nguyên) ==================
 function getStreak(){
- return JSON.parse(
-   localStorage.getItem("arc_streak") ||
-   '{"days":0,"last":""}'
- );
+  return JSON.parse(localStorage.getItem("arc_streak") || '{"days":0,"last":""}');
 }
-
 function saveStreak(s){
- localStorage.setItem(
-   "arc_streak",
-   JSON.stringify(s)
- );
+  localStorage.setItem("arc_streak", JSON.stringify(s));
 }
-
 function renderStreak(){
- const grid = document.getElementById("streakGrid");
- const s = getStreak();
-
- document.getElementById("streakCount").innerText =
-   s.days;
-document.getElementById("streakDashboard").innerText =
-   s.days;
- grid.innerHTML = "";
-
- for(let i=0;i<7;i++){
-   const d=document.createElement("div");
-   d.className="w-10 h-10 rounded bg-zinc-700 flex items-center justify-center";
-   d.innerText = i < s.days ? "✓" : i+1;
-   grid.appendChild(d);
- }
+  const grid = document.getElementById("streakGrid");
+  const s = getStreak();
+  document.getElementById("streakCount").innerText = s.days;
+  document.getElementById("streakDashboard").innerText = s.days;
+  grid.innerHTML = "";
+  for(let i = 0; i < 7; i++){
+    const d = document.createElement("div");
+    d.className = "w-10 h-10 rounded bg-zinc-700 flex items-center justify-center text-sm";
+    d.innerText = i < s.days ? "✓" : (i+1);
+    grid.appendChild(d);
+  }
 }
-
 function bumpStreak(){
- const today = new Date().toDateString();
-
- let s = getStreak();
-
- if(s.last !== today){
-   s.days += 1;
-   s.last = today;
- }
-
- saveStreak(s);
- renderStreak();
-}
-
-function claimFaucet(){
-
- if(!address){
-   alert("Connect wallet first");
-   return;
- }
-
- bumpStreak();
-
- window.open(
-   "https://faucet.circle.com/",
-  "_blank"
- );
-}
-function loadGM(){
- const count =
-   localStorage.getItem("arc_gm_count") || 0;
-
- document.getElementById("gmCount").innerText =
-   count;
-}
-
-async function sayGM() {
-
-  if (!signer) {
-    alert("Connect wallet first");
-    return;
-  }
-
   const today = new Date().toDateString();
-
-  const lastGM =
-    localStorage.getItem("arc_last_gm");
-
-  if (lastGM === today) {
-    alert("You already said GM today ✅");
-    return;
+  let s = getStreak();
+  if(s.last !== today){
+    s.days += 1;
+    s.last = today;
+    saveStreak(s);
+    renderStreak();
   }
+}
+
+// ================== FAUCET ==================
+function claimFaucet(){
+  if(!address) return alert("Connect wallet first");
+  bumpStreak();
+  window.open("https://faucet.circle.com/", "_blank");
+}
+
+// ================== LOAD GM DATA TỪ CONTRACT ==================
+async function loadUserGMData() {
+  if (!gmContract || !address) return;
+  try {
+    const [totalGM, streak] = await gmContract.getUserStats(address);
+    document.getElementById("gmCount").innerText = totalGM.toString();
+    document.getElementById("gmDashboard").innerText = totalGM.toString();
+    document.getElementById("streakCount").innerText = streak.toString();
+    document.getElementById("streakDashboard").innerText = streak.toString();
+  } catch(e) {}
+}
+
+// ================== SAY GM (TẠO TRANSACTION) ==================
+async function sayGM() {
+  if (!gmContract) return alert("Vui lòng kết nối wallet trước!");
 
   try {
+    const tx = await gmContract.sayGM();
+    alert(`Transaction đang được xử lý...\nTx Hash: ${tx.hash}`);
 
-    const signature = await signer.signMessage(
-      `GM Arc ${today}`
-    );
+    await tx.wait(1);
 
-    let count = parseInt(
-      localStorage.getItem("arc_gm_count") || "0"
-    );
+    alert("✅ GM đã được ghi nhận trên chain!");
 
-    count++;
-
-    localStorage.setItem(
-      "arc_gm_count",
-      count
-    );
-
-    localStorage.setItem(
-      "arc_last_gm",
-      today
-    );
-
-    localStorage.setItem(
-      "arc_last_signature",
-      signature
-    );
-
-    document.getElementById("gmCount").innerText =
-      count;
-
+    await loadUserGMData();
     bumpStreak();
 
-    alert("GM signed successfully ✅");
+    document.getElementById("lastTx").innerText = `Last Tx: ${tx.hash.slice(0,12)}...`;
 
   } catch (err) {
-
-    alert("Signature cancelled");
-
+    if (err.message.includes("Already said GM") || err.code === 4001) {
+      alert("Bạn đã nói GM hôm nay rồi!");
+    } else {
+      alert("Lỗi: " + (err.message || err));
+    }
   }
 }
+
+// ================== KHỞI ĐỘNG ==================
 renderStreak();
-loadGM();
+loadUserGMData();
 </script>
 </body>
 </html>
