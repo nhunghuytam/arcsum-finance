@@ -121,7 +121,7 @@ async function connectWallet(){
 // ================== LOAD BALANCE ==================
 async function loadBalance(){
   try {
-    const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+    const USDC_ADDRESS = "0x3910B7cbb3341f1F4bF4cEB66e4A2C8f204FE2b8";
     const ERC20_ABI = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
     
     const usdc = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, provider);
